@@ -3,26 +3,38 @@
 
 # RUN SIMULATIONS ##############################################################
 
-### Constant VPD -------------------------
-
 # Environment
-Tair_vec = seq(20,60, by = 1)
+Tair_vec = seq(20, 60, by = 5)
 PPFD = 1500
 VPD = 1.5
+
+### Constant VPD -------------------------
 
 # Ps = -0.5 MPa
 Tair_sim.df = data.frame(Tair = Tair_vec, PPFD = PPFD, VPD = VPD, Ps = 0.5)
 out_Ps0.5_constVPD = get_predictions(Tair_sim.df)
+Ci <- 400.0 - out_Ps0.5_constVPD$A * 1E-4 / (1.57 * out_Ps0.5_constVPD$gs) * 100^2
+out_Ps0.5_constVPD$Ci_Fick = Ci
+print(out_Ps0.5_constVPD)
+write.csv(out_Ps0.5_constVPD, "Ps0.5_constVPD.csv")
 
 # Ps = -2 MPa
 Tair_sim.df = data.frame(Tair = Tair_vec, PPFD = PPFD, VPD = VPD, Ps = 2)
 out_Ps2_constVPD = get_predictions(Tair_sim.df)
+Ci <- 400.0 - out_Ps2_constVPD$A * 1E-4 / (1.57 * out_Ps2_constVPD$gs) * 100^2
+out_Ps2_constVPD$Ci_Fick = Ci
+#print(out_Ps2_constVPD)
+write.csv(out_Ps2_constVPD, "Ps2_constVPD.csv")
 
 # Ps = -4 MPa
 Tair_sim.df = data.frame(Tair = Tair_vec, PPFD = PPFD, VPD = VPD, Ps = 4)
 out_Ps4_constVPD = get_predictions(Tair_sim.df)
+Ci <- 400.0 - out_Ps4_constVPD$A * 1E-4 / (1.57 * out_Ps4_constVPD$gs) * 100^2
+out_Ps4_constVPD$Ci_Fick = Ci
+#print(out_Ps4_constVPD)
+write.csv(out_Ps4_constVPD, "Ps4_constVPD.csv")
 
-save(out_Ps0.5_constVPD, out_Ps2_constVPD, out_Ps4_constVPD, 
+save(out_Ps0.5_constVPD, out_Ps2_constVPD, out_Ps4_constVPD,
      file = "data/out/theoretical_sims_constVPD.Rdata")
 load("data/out/theoretical_sims_constVPD.Rdata")
 
@@ -33,16 +45,28 @@ VPD = RHtoVPD(RH = 60, TdegC = Tair_vec)
 # Ps = -0.5 MPa
 Tair_sim.df = data.frame(Tair = Tair_vec, PPFD = PPFD, VPD = VPD, Ps = 0.5)
 out_Ps0.5_constRH = get_predictions(Tair_sim.df)
+Ci <- 400.0 - out_Ps0.5_constRH$A * 1E-4 / (1.57 * out_Ps0.5_constRH$gs) * 100^2
+out_Ps0.5_constRH$Ci_Fick = Ci
+#print(out_Ps0.5_constRH)
+write.csv(out_Ps0.5_constRH, "Ps0.5_constRH.csv")
 
 # Ps = -2 MPa
 Tair_sim.df = data.frame(Tair = Tair_vec, PPFD = PPFD, VPD = VPD, Ps = 2)
 out_Ps2_constRH = get_predictions(Tair_sim.df)
+Ci <- 400.0 - out_Ps2_constRH$A * 1E-4 / (1.57 * out_Ps2_constRH$gs) * 100^2
+out_Ps2_constRH$Ci_Fick = Ci
+#print(out_Ps2_constRH)
+write.csv(out_Ps2_constRH, "Ps2_constRH.csv")
 
 # Ps = -4 MPa
 Tair_sim.df = data.frame(Tair = Tair_vec, PPFD = PPFD, VPD = VPD, Ps = 4)
 out_Ps4_constRH = get_predictions(Tair_sim.df)
+Ci <- 400.0 - out_Ps4_constRH$A * 1E-4 / (1.57 * out_Ps4_constRH$gs) * 100^2
+out_Ps4_constRH$Ci_Fick = Ci
+#print(out_Ps4_constRH)
+write.csv(out_Ps4_constRH, "Ps4_constRH.csv")
 
-save(out_Ps0.5_constRH, out_Ps2_constRH, out_Ps4_constRH, 
+save(out_Ps0.5_constRH, out_Ps2_constRH, out_Ps4_constRH,
      file = "data/out/theoretical_sims_constRH.Rdata")
 load("data/out/theoretical_sims_constRH.Rdata")
 
@@ -63,42 +87,6 @@ ggsave(gsAPleafvsTleaf_constRH.plt,
 ggsave(EDvsTleaf_constRH.plt,
        filename = "figs/TheoreticalSims_EDvsTleaf_constRH.tiff", width = 12.25, height = 6.5)
 
-# Plot Tleaf vs Tair
-Tleaf_plts.l = lapply(outputs_constRH, function(df) {
-  Tleaf.plt = plot_physio_vs_Tleaf(df, all = FALSE, yvar = "Tleaf", xvar = "Tair") %>% 
-    add_Tthreshold_lines()
-  return(Tleaf.plt)
-})
-Tleaf_comb_plt = plot_grid(Tleaf_plts.l[[1]] +
-                             ggtitle(expression(bold(psi[s]*" = -0.5 MPa"))) +
-                             theme(legend.position = "none",
-                                   axis.title.x = element_blank(),
-                                   plot.title = element_text(size = 12, face = "bold")), 
-                           Tleaf_plts.l[[2]]  +
-                             ggtitle(expression(bold(psi[s]*" = -2 MPa"))) + 
-                             theme(legend.position = "none",
-                                   axis.title.x = element_blank(),
-                                   axis.title.y = element_blank(),
-                                   axis.text.y = element_blank(),
-                                   axis.ticks.y = element_blank(),
-                                   plot.title = element_text(size = 12, face = "bold")), 
-                           Tleaf_plts.l[[3]] +
-                             ggtitle(expression(bold(psi[s]*" = -4 MPa"))) + 
-                             theme(legend.position = "none",
-                                   axis.title.x = element_blank(),
-                                   axis.title.y = element_blank(),
-                                   axis.text.y = element_blank(),
-                                   axis.ticks.y = element_blank(),
-                                   plot.title = element_text(size = 12, face = "bold")), 
-                           nrow = 1, rel_widths = c(1, 0.85, 0.85))
-TleafvsTair.plt = plot_grid(legend, 
-                            annotate_figure(Tleaf_comb_plt, bottom = text_grob(expression("T"[air]*" (\u00B0C)"), size = 16)), 
-                            nrow = 2, rel_heights = c(.1,1)) +
-  theme(plot.margin = margin(t = 10, r = 10, b = 10, l = 10))
-ggsave(TleafvsTair.plt,
-       filename = "figs/TheoreticalSims_TleafvsTair.tiff", width = 12.25, height = 5.5)
-
-
 ## Constant VPD ----------------------
 
 # Combine dataframes into one list
@@ -110,8 +98,45 @@ EDvsTleaf_constVPD.plt = plot_composite_Trange(outputs_constVPD, vars = "E, Dlea
 
 # Save plots
 ggsave(gsAPleafvsTleaf_constVPD.plt,
-       filename = "figs/FigS3_TheoreticalSims_gsAPleafvsTleaf_constVPD.tiff", 
+       filename = "figs/FigS3_TheoreticalSims_gsAPleafvsTleaf_constVPD.tiff",
        width = 12.25, height = 10, bg = "white")
 ggsave(EDvsTleaf_constVPD.plt,
-       filename = "figs/TheoreticalSims_EDvsTleaf_constVPD.tiff", 
+       filename = "figs/TheoreticalSims_EDvsTleaf_constVPD.tiff",
        width = 12.25, height = 6.5, bg = "white")
+
+## THIS BIT FROM HERE DOES NOT WORK ----------------------
+
+# Plot Tleaf vs Tair
+Tleaf_plts.l = lapply(outputs_constRH, function(df) {
+  Tleaf.plt = plot_physio_vs_Tleaf(df, all = FALSE, yvar = "Tleaf", xvar = "Tair") %>%
+    add_Tthreshold_lines()
+  return(Tleaf.plt)
+})
+Tleaf_comb_plt = plot_grid(Tleaf_plts.l[[1]] +
+                             ggtitle(expression(bold(psi[s]*" = -0.5 MPa"))) +
+                             theme(legend.position = "none",
+                                   axis.title.x = element_blank(),
+                                   plot.title = element_text(size = 12, face = "bold")),
+                           Tleaf_plts.l[[2]]  +
+                             ggtitle(expression(bold(psi[s]*" = -2 MPa"))) +
+                             theme(legend.position = "none",
+                                   axis.title.x = element_blank(),
+                                   axis.title.y = element_blank(),
+                                   axis.text.y = element_blank(),
+                                   axis.ticks.y = element_blank(),
+                                   plot.title = element_text(size = 12, face = "bold")),
+                           Tleaf_plts.l[[3]] +
+                             ggtitle(expression(bold(psi[s]*" = -4 MPa"))) +
+                             theme(legend.position = "none",
+                                   axis.title.x = element_blank(),
+                                   axis.title.y = element_blank(),
+                                   axis.text.y = element_blank(),
+                                   axis.ticks.y = element_blank(),
+                                   plot.title = element_text(size = 12, face = "bold")),
+                           nrow = 1, rel_widths = c(1, 0.85, 0.85))
+TleafvsTair.plt = plot_grid(legend,
+                            annotate_figure(Tleaf_comb_plt, bottom = text_grob(expression("T"[air]*" (\u00B0C)"), size = 16)),
+                            nrow = 2, rel_heights = c(.1,1)) +
+  theme(plot.margin = margin(t = 10, r = 10, b = 10, l = 10))
+ggsave(TleafvsTair.plt,
+       filename = "figs/TheoreticalSims_TleafvsTair.tiff", width = 12.25, height = 5.5)
